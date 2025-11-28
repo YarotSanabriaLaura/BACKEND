@@ -6,17 +6,19 @@ WORKDIR /app
 # Copiamos solo lo mínimo para resolver dependencias primero
 COPY pom.xml .
 COPY src ./src
+COPY mvnw .
+COPY .mvn ./.mvn
 
-# Construimos el JAR (sin tests para que sea más rápido)
-RUN mvn clean package -DskipTests
+# Construimos el JAR (sin tests)
+RUN chmod +x mvnw
+RUN ./mvnw clean package -DskipTests
 
 # Etapa 2: imagen mínima solo con el JRE
 FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
-# IMPORTANTE: este nombre debe coincidir con el JAR que se generó
-# Tú ya tienes: demo-0.0.1-SNAPSHOT.jar en target
+# IMPORTANTE: nombre correcto del JAR generado
 COPY --from=build /app/target/demo-0.0.1-SNAPSHOT.jar app.jar
 
 EXPOSE 8080
